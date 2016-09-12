@@ -3,7 +3,7 @@ GbmTranslate <- function (gbm_object,
                           n_trees,
                           model_location,
                           language = "c",
-                          missing_value = ){
+                          missing_value = NULL){
 
   #verifying input
   if (!inherits(gbm_object, "gbm")){
@@ -46,7 +46,12 @@ GbmTranslate <- function (gbm_object,
       }
       
     }
+    if (is.null(missing_value)){
     GBM_Scoring <- paste0(GBM_Scoring,"\nconst double MISSING = -DBL_MAX;\n")
+    } else {
+    GBM_Scoring <- paste0(GBM_Scoring,"\nconst double MISSING = ",as.character(missing_value),";\n")      
+    }
+    
     GBM_Scoring <- paste0(GBM_Scoring,"double score = 0;\n")
     GBM_Scoring <- paste0(GBM_Scoring,"int done, node;\n")    
     for (i_tree in 1:n_trees){
@@ -84,8 +89,8 @@ GbmTranslate <- function (gbm_object,
         category_right <- gbm_object$var.levels[[scoring_matrix[i_nodes,'SplitVar']+1]][(left_index+1.5):
                                           length(gbm_object$var.levels[[scoring_matrix[i_nodes,'SplitVar']+1]])]
         
-        logic_left <- paste(paste0("strcmp (",name_var,',"',category_left,'")'),collapse='||')
-        logic_right<- paste(paste0("strcmp (",name_var,',"',category_right,'")'),collapse='||')
+        logic_left <- paste(paste0("!strcmp (",name_var,',"',category_left,'")'),collapse='||')
+        logic_right<- paste(paste0("!strcmp (",name_var,',"',category_right,'")'),collapse='||')
         
         GBM_Scoring <- paste0(GBM_Scoring," if (",logic_left,") {node = ",
                               as.character(scoring_matrix[i_nodes,'LeftNode']),";\n} else if (",
@@ -105,8 +110,8 @@ GbmTranslate <- function (gbm_object,
                         paste(category_absent,collapse=",")," in the train data."))
         }
         
-        logic_left <- paste(paste0("strcmp (",name_var,',"',category_left,'")'),collapse='||')
-        logic_right<- paste(paste0("strcmp (",name_var,',"',category_right,'")'),collapse='||')
+        logic_left <- paste(paste0("!strcmp (",name_var,',"',category_left,'")'),collapse='||')
+        logic_right<- paste(paste0("!strcmp (",name_var,',"',category_right,'")'),collapse='||')
  
         GBM_Scoring <- paste0(GBM_Scoring," if (",logic_left,") {node = ",
                               as.character(scoring_matrix[i_nodes,'LeftNode']),";\n} else if (",
@@ -122,7 +127,11 @@ GbmTranslate <- function (gbm_object,
   }
    GBM_Scoring <- paste0(GBM_Scoring,"return score;\n}\n")  
   writeLines(GBM_Scoring,file.path(model_location,paste0(model_name,".c"),sep=""))
-} else if (language == "sas") {}
-} else if (language == "java") {}
+} else if (language == "sas") {
+  
+}
+  else if (language == "java") {
+    
+  }
 }
 
