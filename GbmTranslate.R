@@ -149,7 +149,7 @@ GbmTranslate <- function (gbm_object,
     GBM_Scoring <- paste0(GBM_Scoring,"\nMISSING = ",as.character(missing_value),";\n")      
   }
   
-  GBM_Scoring <- paste0(GBM_Scoring,"score = 0;\n")
+  GBM_Scoring <- paste0(GBM_Scoring,"score = 0;\nlink TN_1_N0;\nreturn;\n")
    
   for (i_tree in 1:n_trees){
     scoring_matrix <- pretty.gbm.tree(gbm_object,i_tree)   
@@ -232,7 +232,7 @@ GbmTranslate <- function (gbm_object,
       
     }
   }
- 
+  GBM_Scoring <- paste0(GBM_Scoring,"\nreturn;\nrun;\n"
   writeLines(GBM_Scoring,file.path(model_location,paste0(model_name,".sas"),sep=""))
 }
   else if (language == "java") {
